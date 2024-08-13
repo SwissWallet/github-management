@@ -56,3 +56,6 @@ jobs:
             } catch (error) {
               console.error('Error listing repositories:', error);
             }
+
+          env:
+            GITHUB_TOKEN: ${{ secrets.TOKEN_PERSONAL }}
