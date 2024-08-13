@@ -1,7 +1,7 @@
 name: Protect Branches
 
 on:
-  workflow_dispatch: 
+  workflow_dispatch:
 
 jobs:
   protect-branches:
@@ -15,13 +15,9 @@ jobs:
         uses: actions/github-script@v6
         with:
           script: |
-            const org = 'SwissWallet'; 
-            const branch = 'master'; 
+            const org = 'SwissWallet';
+            const branch = 'master';
             const protectionSettings = {
-              # required_status_checks: {
-              #   strict: true,
-              #   contexts: ["build"] 
-              # },
               enforce_admins: true,
               required_pull_request_reviews: {
                 dismiss_stale_reviews: true,
@@ -30,25 +26,33 @@ jobs:
               },
               restrictions: null,
               allow_force_pushes: false,
-              allow_deletions: false ,
+              allow_deletions: false
             };
 
-            const { data: repos } = await github.rest.repos.listForOrg({
-              org: org,
-              type: 'all'
-            });
+            try {
+              const { data: repos } = await github.rest.repos.listForOrg({
+                org: org,
+                type: 'all'
+              });
 
-            for (const repo of repos) {
-              try {
-        
-                await github.rest.repos.updateBranchProtection({
-                  owner: org,
-                  repo: repo.name,
-                  branch: branch,
-                  ...protectionSettings
-                });
-                console.log(`Branch ${branch} protegida no repositório ${repo.name}`);
-              } catch (error) {
-                console.error(`Erro ao proteger o branch ${branch} no repositório ${repo.name}:`, error);
+              if (repos.length === 0) {
+                console.log(`No repositories found in organization ${org}.`);
+                return;
               }
+
+              for (const repo of repos) {
+                try {
+                  await github.rest.repos.updateBranchProtection({
+                    owner: org,
+                    repo: repo.name,
+                    branch: branch,
+                    ...protectionSettings
+                  });
+                  console.log(`Branch ${branch} protected in repository ${repo.name}`);
+                } catch (error) {
+                  console.error(`Error protecting branch ${branch} in repository ${repo.name}:`, error);
+                }
+              }
+            } catch (error) {
+              console.error('Error listing repositories:', error);
             }
