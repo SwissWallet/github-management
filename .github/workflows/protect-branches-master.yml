@@ -23,6 +23,7 @@ jobs:
     - name: Update branch protection rules
       env:
         GITHUB_TOKEN: ${{ secrets.PERSONAL_TOKEN }}
+      run: env
       run: |
         import requests
         import os
